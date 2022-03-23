@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.AdminDao"> <!--扫描到的包路径-->
+
+    <!--根据账户查询-->
+    <select id="findAdminByNumber" resultType="com.ldg.entity.Admin">
+      select * from user_admin where admin_number = #{adminNumber}
+    </select>
+    <!--通过ID查询-->
+    <select id="selectById" resultType="com.ldg.entity.Admin" parameterType="int">
+        select admin_id,admin_number,admin_name,password,sex,telephone,create_time,admin_state,avatar_url from user_admin where admin_id = #{adminId}
+    </select>
+    <!--通过手机phone查询-->
+    <select id="selectByPhone" resultType="com.ldg.entity.Admin" parameterType="String">
+        select admin_id,admin_number,admin_name,password,sex,telephone,create_time,admin_state,avatar_url from user_admin where telephone = #{telephone}
+    </select>
+    <!--查询总数-->
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from user_admin
+    </select>
+    <!--查询状态-->
+    <select id="selectAdminState" resultType="java.lang.Integer" parameterType="String">
+        select admin_state from user_admin where admin_number = #{adminNumber};
+    </select>
+    <!--判断手机号telephone是否存在-->
+    <select id="existsWithPrimaryPhone" resultType="Boolean" parameterType="String">
+        select count(admin_number) from user_admin where telephone = #{telephone};
+    </select>
+    <!--判断主键key是否存在-->
+    <select id="existsWithPrimaryKey" resultType="Boolean" parameterType="String">
+        select count(admin_number) from user_admin where admin_number = #{key};
+    </select>
+    <!--查询所有-->
+    <select id="selectAll" resultType="com.ldg.entity.Admin">
+        select admin_id,admin_number,admin_name,password,sex,telephone,creat_time,admin_state,avatar_url from user_admin;
+    </select>
+    <!--插入一条数据-->
+    <insert id="insertData" parameterType="com.ldg.entity.Admin" useGeneratedKeys="true" keyProperty="adminId">
+        insert into user_admin (admin_number, admin_name, password, sex, telephone, create_time, admin_state, avatar_url) values (#{adminNumber},#{adminName},#{password},#{sex},#{telephone},#{createTime},#{adminState},#{avatarUrl});
+    </insert>
+    <!--通过ID更新-->
+    <update id="updateById" parameterType="com.ldg.entity.Admin">
+        update user_admin
+        <set>
+            <if test="adminName != null">
+                admin_name = #{adminName},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="telephone != null">
+                telephone = #{telephone},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="adminState != null">
+                admin_state = #{adminState},
+            </if>
+            <if test="avatarUrl != null">
+                avatar_url = #{avatarUrl},
+            </if>
+        </set>
+        where admin_id = #{adminId};
+    </update>
+    <!--通过ID删除-->
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete from user_admin where admin_id = #{adminId};
+    </delete>
+
+    <select id="selectAllByKey" resultType="com.ldg.entity.Admin">
+        select * from user_admin
+        <where>
+            <if test="key!= null and key != ''">
+                admin_number  like concat('%',#{key},'%')
+                or admin_name  like concat('%',#{key},'%')
+                or telephone  like concat('%',#{key},'%')
+            </if>
+        </where>
+    </select>
+
+</mapper>

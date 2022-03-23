@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.ProductDao"> <!--扫描到的包路径-->
+    <!--通过ID查询-->
+    <select id="selectById" resultType="com.ldg.entity.Product" parameterType="java.lang.Integer">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock,is_new, is_sale, sale_time, product_url,sale_stock
+        from product where product_id=#{productId};
+    </select>
+    <!--通过 商品编号 查询-->
+    <select id="selectByKey" resultType="com.ldg.entity.Product" parameterType="String">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url
+        from product where product_no = #{productNo};
+    </select>
+    <!--通过 商品编号 查Id-->
+    <select id="selectIdByKey" resultType="java.lang.Integer" parameterType="String">
+        select product_id from product where product_no = #{productNo}
+    </select>
+    <!--查询记录个数-->
+    <select id="selectCount" resultType="java.lang.Integer">
+        select count(*) from product
+    </select>
+    <!--判断 商品编号 是否存在-->
+    <select id="existsWithPrimaryKey" resultType="Boolean" parameterType="String">
+        select count(product_no) from product where product_no = #{key};
+    </select>
+    <!--查询所有-->
+    <select id="selectAll" resultType="Product">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url from product;
+    </select>
+
+    <!--查询所有-->
+    <select id="selectAllNew" resultType="Product">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url from product where is_new = 1;
+    </select>
+    <!--查询所有上架商品，并按开售时间排序-->
+    <select id="selectAllSale" resultType="Product">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url
+        from product where is_sale order by sale_time desc;
+    </select>
+    <!--根据商品名称模糊查询-->
+    <select id="selectAllLikeName" resultType="Product" parameterType="String">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url
+        from product where is_sale and product_name like CONCAT('%',#{keyWord},'%') order by sale_time desc;
+    </select>
+    <!--根据商品类型模糊查询-->
+    <select id="selectAllLikeType" resultType="Product" parameterType="String">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url
+        from product where is_sale and product_type like CONCAT('%',#{keyWord},'%') order by sale_time desc;
+    </select>
+
+    <!--根据商品类型模糊查询-->
+    <select id="selectAllLikeKeyWord" resultType="Product" parameterType="String">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url
+        from product
+        <where>
+            is_sale = 1
+            <if test="keyWord !=null and keyWord !=''">
+                and product_type like CONCAT('%',#{keyWord},'%')
+                or product_name like CONCAT('%',#{keyWord},'%')
+                or product_brand like CONCAT('%',#{keyWord},'%')
+                order by sale_time desc;
+            </if>
+        </where>
+    </select>
+    <!--根据商品品牌模糊查询-->
+    <select id="selectAllLikeBrand" resultType="Product" parameterType="String">
+        select product_id, product_no, product_name, product_type, product_describe, product_brand, in_price, out_price, product_stock, is_new, is_sale, sale_time, product_url
+        from product where is_sale and product_brand like CONCAT('%',#{keyWord},'%') order by sale_time desc;
+    </select>
+    <!--根据商品分类查询-->
+    <select id="selectAllByType" resultType="java.util.Map">
+        select product_type,count(product_type) as count,type.type_url_left,type.type_url_top
+        from product,product_type as type where(product.product_type=type.type_name) group by product_type;
+    </select>
+    <!--判断商品类别是否存在-->
+    <select id="existsProductType" resultType="Boolean" parameterType="String">
+        select count(product_type) from product where product_type = #{productType};
+    </select>
+    <!--判断商品品牌是否存在-->
+    <select id="existsProductBrand" resultType="Boolean" parameterType="String">
+        select count(product_brand) from product where product_brand = #{productBrand};
+    </select>
+    <!--查询商品数量、商品上架数量、商品下架数量 -->
+    <select id="productOverview" resultType="java.util.Map">
+        SELECT COUNT(*) AS productCount,COUNT(IF(is_sale,1,NULL)) AS saleCount,COUNT(IF(!is_sale,1,NULL)) AS noSaleCount FROM product;
+    </select>
+    <!--插入一条数据-->
+    <insert id="insertData" parameterType="Product">
+        insert into product (product_id, product_no, product_name, product_type, product_describe, product_brand,
+                             in_price, out_price, product_stock, is_new, is_sale, sale_time,
+                             product_url,sale_stock)
+        values (#{productId},#{productNo},#{productName},#{productType},
+                #{productDescribe},#{productBrand},#{inPrice},#{outPrice},
+                #{productStock},#{isNew},#{isSale},
+                #{saleTime},#{productUrl},#{saleStock});
+    </insert>
+    <!--通过ID更新-->
+    <update id="updateById" parameterType="Product">
+        update product
+        <set>
+            <if test="productNo != null">
+                product_no = #{productNo},
+            </if>
+            <if test="productName != null">
+                product_name = #{productName},
+            </if>
+            <if test="productType != null">
+                product_type = #{productType},
+            </if>
+            <if test="productDescribe != null">
+                product_describe = #{productDescribe},
+            </if>
+            <if test="productBrand != null">
+                product_brand = #{productBrand},
+            </if>
+            <if test="inPrice != null">
+                in_price = #{inPrice},
+            </if>
+            <if test="outPrice != null">
+                out_price = #{outPrice},
+            </if>
+            <if test="productStock != null">
+                product_stock = #{productStock},
+            </if>
+            <if test="isNew != null">
+                is_new = #{isNew},
+            </if>
+            <if test="isSale != null">
+                is_sale = #{isSale},
+            </if>
+            <if test="saleTime != null">
+                sale_time = #{saleTime},
+            </if>
+            <if test="productUrl != null">
+                product_url = #{productUrl},
+            </if>
+            <if test="saleStock != null">
+                sale_stock = #{saleStock},
+            </if>
+        </set>
+        where product_id = #{productId};
+    </update>
+    <!--通过ID删除-->
+    <delete id="deleteById" parameterType="int">
+        delete from product where product_id = #{productId};
+    </delete>
+
+    <update id="updateByNo">
+      update product set product_stock = product_stock - #{productStock},sale_stock = sale_stock + #{saleStock}
+      where product_no = #{productNo}
+    </update>
+
+    <select id="productInfo" resultType="java.util.Map">
+        select count(if(is_new=1,1,null)) as newProduct,count(if(is_sale=1,1,null)) as isSale ,count(if(is_sale=0,1,null)) as noSale,count(*) as allProduct from product
+    </select>
+    
+    <select id="selectAllByCondition" resultType="com.ldg.entity.Product" parameterType="java.util.Map">
+        select product_id as productId, product_no as productNo,
+        product_name as productName,product_type as productType,product_describe as productDescribe,
+        product_brand as productBrand,in_price as inPrice,out_price as outPrice,
+        product_stock as productStock,is_new as isNew,is_sale as isSale,sale_time as saleTime,
+        product_url as productUrl,sale_stock as saleStock
+        from product
+        <where>
+            <if test="productNo != null and productNo != ''">
+                product_no  like concat('%',#{productNo},'%')
+            </if>
+            <if test="productName != null and productName != ''">
+                and product_name like concat('%',#{productName},'%')
+            </if>
+            <if test="productType != null and productType != ''">
+                and product_type = #{productType}
+            </if>
+            <if test="productBrand != null and productBrand != ''">
+                and product_brand = #{productBrand}
+            </if>
+            <if test="isNew != null">
+                and is_new = #{isNew}
+            </if>
+            <if test="isSale != null">
+                and is_sale = #{isSale}
+            </if>
+        </where>
+        order by sale_time desc  limit ${(pageNum-1) * pageSize} , #{pageSize}
+    </select>
+    
+    <select id="getProductCountByCon" parameterType="java.util.Map" resultType="java.lang.Integer">
+      select count(*) from product
+      <where>
+          <if test="productNo != null and productNo != ''">
+              product_no  like concat('%',#{productNo},'%')
+          </if>
+          <if test="productName != null and productName != ''">
+              and product_name like concat('%',#{productName},'%')
+          </if>
+          <if test="productType != null and productType != ''">
+              and product_type = #{productType}
+          </if>
+          <if test="productBrand != null and productBrand != ''">
+              and product_brand = #{productBrand}
+          </if>
+          <if test="isNew != null">
+              and is_new = #{isNew}
+          </if>
+          <if test="isSale != null">
+              and is_sale = #{isSale}
+          </if>
+      </where>
+    </select>
+
+    <update id="updateIsSale" >
+
+            update product
+            <set>
+                <if test="isSale !=-1">
+                    is_sale =#{isSale}
+                </if>
+                <if test="isNew !=-1">
+                    is_new =#{isNew}
+                </if>
+            </set>
+            where
+            product_id in
+        <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.UserDao"> <!--扫描到的包路径-->
+
+    <select id="findUserByNumber" resultType="com.ldg.entity.User">
+        select * from user_mall where account_number=#{accountNumber}
+    </select>
+    
+    <insert id="insertData" parameterType="User" useGeneratedKeys="true" keyProperty="userId">
+        insert into user_mall (account_number, user_name, password, sex, telephone, create_time,user_state, avatar_url) values (#{accountNumber},#{userName},#{password},#{sex},#{telephone},#{createTime},#{userState},#{avatarUrl});
+    </insert>
+
+    <select id="loginMall" resultType="com.ldg.entity.User">
+        select * from user_mall where account_number=#{accountNumber} and password=#{password}
+    </select>
+
+    <update id="updateById" parameterType="com.ldg.entity.User">
+        update user_mall
+        <set>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="telephone != null">
+                telephone = #{telephone},
+            </if>
+            <if test="userState != null">
+                user_state = #{userState},
+            </if>
+            <if test="avatarUrl != null">
+                avatar_url = #{avatarUrl},
+            </if>
+        </set>
+        where user_id = #{userId};
+    </update>
+    
+    <select id="userInfo" resultType="java.util.Map">
+        SELECT count(IF(to_days(create_time)=to_days(now()),1,NULL)) as todayUser,
+        COUNT(IF(TO_DAYS(NOW()) - TO_DAYS(create_time) = 1,1,null)) as yesterdayUser,
+        COUNT(IF(TO_DAYS(NOW()) - TO_DAYS(create_time)  &lt; (SELECT day(LAST_DAY(CURDATE()))),1,null)) as monthUser,
+        COUNT(*) as allUser
+        from user_mall;
+    </select>
+    
+    <select id="selectAllUserByCon" resultType="com.ldg.entity.User">
+        select * from user_mall
+        <where>
+            <if test="key != null and key != ''">
+                user_name like  concat('%',#{key},'%') or account_number like  concat('%',#{key},'%')
+            </if>
+
+        </where>
+    </select>
+
+
+</mapper>

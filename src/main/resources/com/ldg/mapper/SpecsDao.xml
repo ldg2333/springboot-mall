@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.SpecsDao"> <!--扫描到的包路径-->
+    <!--通过ID查询-->
+    <select id="selectById" resultType="com.ldg.entity.Specs" parameterType="int">
+        select specs_id, specs_name, product_type from specs where specs_id=#{specsId} order by product_type,specs_name;
+    </select>
+    <!--查询所有-->
+    <select id="selectAll" resultType="com.ldg.entity.Specs">
+        select specs_id, specs_name, product_type from specs order by product_type,specs_name;
+    </select>
+
+    <!--查询所有-->
+    <select id="selectAllByNAT" resultType="com.ldg.entity.Specs">
+        select specs_id, specs_name, product_type from specs
+        where specs_name like concat('%',#{key},'%')  or product_type like concat('%',#{key},'%') order BY product_type,specs_name;
+    </select>
+    <!--判断 商品规格 是否存在-->
+    <select id="existsWithSpecsName" resultType="Boolean">
+        select count(specs_name) from specs where specs_name = #{specsName} and specs_id != #{specsId} and product_type = #{productType};
+    </select>
+
+    <!--判断 商品规格 是否存在-->
+    <select id="existsWithName" resultType="Boolean">
+        select count(specs_name) from specs where specs_name = #{specsName}  and product_type = #{productType};
+    </select>
+    <!--通过类型查询所有-->
+    <select id="selectAllByType" resultType="com.ldg.entity.Specs" parameterType="String">
+        select specs_id, specs_name, product_type from specs where product_type=#{productType};
+    </select>
+    <!--插入一条数据-->
+    <insert id="insertData" parameterType="com.ldg.entity.Specs">
+        insert into specs (specs_id, specs_name, product_type) values (#{specsId},#{specsName},#{productType});
+    </insert>
+    <!--通过ID更新-->
+    <update id="updateById" parameterType="com.ldg.entity.Specs">
+        update specs
+        <set>
+            <if test="specsName != null">
+                specs_name = #{specsName},
+            </if>
+            <if test="productType != null">
+                product_type = #{productType},
+            </if>
+        </set>
+        where specs_id = #{specsId};
+    </update>
+    <!--通过ID删除-->
+    <delete id="deleteById" parameterType="int">
+        delete from specs where specs_id = #{specsId};
+    </delete>
+    
+    <select id="isExistProduct" resultType="Boolean">
+        select count(*) from product p,product_specs ps where p.product_type = #{productType} and ps.specs_id = #{specsId}
+    </select>
+</mapper>

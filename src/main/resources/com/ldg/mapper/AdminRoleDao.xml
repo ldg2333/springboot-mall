@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.AdminRoleDao"> <!--扫描到的包路径-->
+    <!--通过ID查询-->
+    <select id="selectByAdminId" resultType="AdminRole" parameterType="Integer">
+        select admin_id,role_id from user_admin_role where admin_id = #{adminId}
+    </select>
+
+    <!--通过用户id查询角色信息-->
+    <select id="selectRoleByAdminId" resultType="Map" parameterType="Integer">
+        select admin_id as adminId,admin_role.role_id as roleId,role_name as roleName
+               from user_admin_role,admin_role where admin_role.role_id=user_admin_role.role_id and admin_id = #{adminId}
+    </select>
+
+    <!--查询所有-->
+    <select id="selectAll" resultType="AdminRole">
+        select admin_id,role_id from user_admin_role;
+    </select>
+
+    <!--判断角色是否存在-->
+    <select id="existsRole" resultType="Boolean" parameterType="Integer">
+        select count(role_id) from user_admin_role where role_id = #{roleId};
+    </select>
+
+    <!--插入一条数据-->
+    <insert id="insertData" parameterType="AdminRole">
+        insert into user_admin_role values (#{adminId},#{roleId});
+    </insert>
+
+    <!--通过ID删除-->
+    <delete id="deleteById" parameterType="Integer">
+        delete from user_admin_role where admin_id = #{adminId};
+    </delete>
+
+    <delete id="deleteByList" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" separator=";" close="">
+            delete from user_admin_role where role_id = #{item.roleId} and admin_id=#{item.adminId}
+        </foreach>
+    </delete>
+
+    <insert id="addByList" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" separator=";" close="">
+            insert into user_admin_role (admin_id, role_id) values (#{item.adminId},#{item.roleId})
+        </foreach>
+    </insert>
+</mapper>

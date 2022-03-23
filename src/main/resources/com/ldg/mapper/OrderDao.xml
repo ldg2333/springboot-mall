@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.OrderDao"> <!--扫描到的包路径-->
+
+    <select id="selectAllOrder" resultType="java.util.Map" parameterType="java.lang.Integer">
+        SELECT order_id as orderId,order_url as orderUrl, product_no as productNo,
+        product_type as productType, order_no as orderNo, order_state as orderState,
+        order_create_time as orderCreateTime,product_name as productName,product_brand as productBrand,
+        product_name as productName,pay_price as payPrice,pay_amount as payAmount,
+        product_describe as productDescribe,product_specs as productSpecs,product_id as productId,return_reason as returnReason
+        from `order` o where
+        o.user_id = #{userId} order by order_create_time  desc
+    </select>
+
+    <select id="selectAllOrderByKey" resultType="java.util.Map" parameterType="java.lang.Integer">
+        SELECT order_id as orderId,order_url as orderUrl, product_no as productNo,
+        product_type as productType, order_no as orderNo, order_state as orderState,
+        order_create_time as orderCreateTime,product_name as productName,product_brand as productBrand,
+        product_name as productName,pay_price as payPrice,pay_amount as payAmount,
+        product_describe as productDescribe,product_specs as productSpecs,product_id as productId,return_reason as returnReason
+        from `order` o
+
+         <where>
+             o.user_id = #{userId}
+             <if test="key != null">
+                 and order_state = #{key}
+             </if>
+         </where>
+         order by order_create_time  desc
+    </select>
+    
+    <select id="selectOrderById" resultType="java.util.Map" parameterType="java.lang.Integer">
+        select DISTINCT * from `order` o  where order_id = #{orderId}
+    </select>
+
+    <select id="selectOrderByNo" resultType="java.util.Map" parameterType="java.lang.String">
+        select DISTINCT * from `order` o where order_no = #{orderNo}
+    </select>
+    
+    <select id="findOrderByNo" resultType="com.ldg.entity.Order" parameterType="java.lang.String">
+        select * from `order` where order_no=#{orderNo}
+    </select>
+
+    <insert id="insertData" parameterType="com.ldg.entity.Order">
+        insert into `order`(order_no, order_create_time, product_no, product_specs, user_id, pay_price, pay_amount, order_state, order_url, province_name, city_name, area_name, address_detail, name, phone, zip_code,total_price,product_name,product_type,product_describe,product_brand,in_price,product_id)
+        values (#{orderNo}, #{orderCreateTime}, #{productNo}, #{productSpecs}, #{userId},#{payPrice},#{payAmount},#{orderState},#{orderUrl},#{provinceName},#{cityName},#{areaName},#{addressDetail}, #{name}, #{phone}, #{zipCode},#{totalPrice},#{productName},#{productType},#{productDescribe},#{productBrand},#{inPrice},#{productId})
+    </insert>
+
+    <update id="updateByNo" parameterType="com.ldg.entity.Order">
+        update `order`
+        <set>
+            <if test="orderPayTime != null">
+                order_pay_time = #{orderPayTime},
+            </if>
+            <if test="payAmount != null">
+                pay_amount = #{payAmount},
+            </if>
+            <if test="orderState != null">
+                order_state = #{orderState},
+            </if>
+            <if test="provinceName != null">
+                province_name = #{provinceName},
+            </if>
+            <if test="cityName != null">
+                city_name = #{cityName},
+            </if>
+            <if test="areaName != null">
+                area_name = #{areaName},
+            </if>
+            <if test="addressDetail != null">
+                address_detail = #{addressDetail},
+            </if>
+            <if test="zipCode != null">
+                zip_code = #{zipCode},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="returnReason != null">
+                return_reason = #{returnReason},
+            </if>
+        </set>
+        where order_no = #{orderNo}
+    </update>
+
+    <update id="updateById" parameterType="com.ldg.entity.Order">
+        update `order`
+        <set>
+            <if test="orderPayTime != null">
+                order_pay_time = #{orderPayTime},
+            </if>
+            <if test="payAmount != null">
+                pay_amount = #{payAmount},
+            </if>
+            <if test="orderState != null">
+                order_state = #{orderState},
+            </if>
+            <if test="provinceName != null">
+                province_name = #{provinceName},
+            </if>
+            <if test="cityName != null">
+                city_name = #{cityName},
+            </if>
+            <if test="areaName != null">
+                area_name = #{areaName},
+            </if>
+            <if test="addressDetail != null">
+                address_detail = #{addressDetail},
+            </if>
+            <if test="zipCode != null">
+                zip_code = #{zipCode},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="returnReason != null">
+                return_reason = #{returnReason},
+            </if>
+        </set>
+        where order_id = #{orderId}
+    </update>
+
+    <delete id="deleteById" parameterType="int">
+        delete from `order` where order_id = #{orderId};
+    </delete>
+
+    <select id="selectOrderData" resultType="java.util.Map">
+        SELECT COUNT(IF(to_days(order_create_time)=to_days(now()) and order_state!=0 and order_state!=-1,1,NULL)) AS todayOrderCount,
+               IFNULL(SUM(IF(to_days(order_create_time)=to_days(now()) and order_state!=0 and order_state!=-1 and order_state!=5,total_price,0)),0) AS todayOrderMoney,
+               IFNULL(SUM(IF(TO_DAYS(NOW()) - TO_DAYS(order_create_time) = 1 and order_state!=0 and order_state!=-1,total_price,0)),0) AS yesterdayOrderMoney,
+							 IFNULL(SUM(IF(TO_DAYS(NOW()) - TO_DAYS(order_create_time) = 1 and order_state=0,total_price,0)),0) AS todayNoPayOrderMoney,
+               COUNT(*) AS orderCount,
+								COUNT(IF(order_state=-1,1,NULL)) AS cancelCount,
+               COUNT(IF(order_state=0,1,NULL)) AS noPayCount,
+						   COUNT(IF(order_state=1,1,NULL)) AS noSendGoodsCount,
+               COUNT(IF(order_state=2,1,NULL)) AS sendGoodsCount,
+               COUNT(IF(order_state=3,1,NULL)) AS finishOrderCount,
+               COUNT(IF(order_state=4,1,NULL)) AS noDealCount,
+               COUNT(IF(order_state=5,1,NULL)) AS returnOkCount,
+               COUNT(IF(order_state=6,1,NULL)) AS waitEvaluateCount,
+							 COUNT(IF(order_state=7,1,NULL)) AS evaluateCount FROM `order`;
+    </select>
+    
+    <select id="selectOrders" resultType="com.ldg.entity.Order">
+        select * from `order` order by order_create_time desc
+    </select>
+    
+    <select id="selectProductAndType" resultType="java.util.Map">
+        SELECT COUNT(order_id) AS productCount, `order`.product_type as productType
+        FROM `order`,product WHERE `order`.product_no=product.product_no and order_state!=-1 and order_state!=5
+        GROUP BY `order`.product_type;
+    </select>
+
+    <!--获取订单图表分析数据-->
+    <select id="selectOrderLineChart" resultType="java.util.Map" parameterType="String">
+        SELECT DATE_FORMAT(order_pay_time,'%Y-%m-%d') AS `date`,COUNT(order_id) AS orderCount,SUM(pay_price) AS orderAmount FROM `order` WHERE DATE(order_pay_time) &gt;= DATE(#{startTime}) AND DATE(order_pay_time) &lt;= DATE(#{endTime}) AND order_state!=-1 and  order_state!=5 GROUP BY `date`;
+    </select>
+
+    <select id="selectCompareData" resultType="java.util.Map">
+        SELECT COUNT(IF(to_days(now()) - to_days(order_pay_time) &lt; 30 and order_state!=-1 and order_state!=5 and order_state!=0,1,NULL)) AS curMonthOrderCount,
+						count(IF(DATE_FORMAT( order_pay_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' )-1 and order_state!=5 and order_state!=0,1,NULL)) as lastMonthOrderCount,
+        COUNT(IF(to_days(now()) - to_days(order_pay_time) &lt; 7 and order_state!=-1 and order_state!=5 and order_state!=0,1,NULL)) AS curWeekOrderCount,
+        COUNT(IF(YEARWEEK(date_format(order_pay_time,'%Y-%m-%d')) = YEARWEEK(now())-1 and order_state!=-1 and order_state!=5 and order_state!=0,1,NULL)) AS lastWeekOrderCount,
+        IFNULL(SUM(IF(YEARWEEK(date_format(order_pay_time,'%Y-%m-%d')) = YEARWEEK(now()) and order_state!=-1 and order_state!=0 and order_state!=5,total_price,0)),0) AS curWeekOrderMoney,
+        IFNULL(SUM(IF(YEARWEEK(date_format(order_pay_time,'%Y-%m-%d')) = YEARWEEK(now())-1 and order_state!=0 and order_state!=-1 and order_state!=5,total_price,0)),0) AS lastWeekOrderMoney,
+        IFNULL(SUM(IF(DATE_FORMAT( order_pay_time, '%Y%m' ) = DATE_FORMAT( CURDATE( ) , '%Y%m' ) and order_state!=-1 and order_state!=0 and order_state!=5,total_price,0)),0) AS curMonthOrderMoney,
+        IFNULL(SUM(IF(PERIOD_DIFF( date_format( now( ) , '%Y%m' ) , date_format( order_pay_time, '%Y%m' ) ) =1 and order_state!=0 and order_state!=-1 and order_state!=5,total_price,0)),0) AS lastMonthOrderMoney
+        FROM `order`;
+    </select>
+
+    <select id="selectOrdersByMap" resultType="com.ldg.entity.Order" parameterType="java.util.Map">
+        select * from `order` 
+        <where>
+            <if test="orderNo !=null and orderNo != ''">
+                order_no like  concat('%',#{orderNo},'%')
+            </if>
+            <if test="productName !=null and productName != ''">
+                and product_name like  concat('%',#{productName},'%')
+            </if>
+            <if test="Name !=null and Name != ''">
+                and name like  concat('%',#{Name},'%')
+            </if>
+            <if test="addressInfo != null and addressInfo !=''">
+               and  province_name like concat('%',#{addressInfo},'%')
+                or  city_name like concat('%',#{addressInfo},'%')
+                or  area_name like concat('%',#{addressInfo},'%')
+            </if>
+            <if test="startTime != null and startTime !='' and endTime!= null and endTime!=''">
+               and DATE(order_pay_time) &gt;= DATE(#{startTime}) AND DATE(order_pay_time) &lt;= DATE(#{endTime})
+            </if>
+            <if test="orderState != null">
+               and order_state = #{orderState}
+            </if>
+        </where>
+        order by order_pay_time desc  limit ${(pageNum-1) * pageSize} , #{pageSize}
+    </select>
+
+    <select id="getOrderCountByCon" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select count(*) from `order`
+        <where>
+            <if test="orderNo !=null and orderNo != ''">
+                order_no like  concat('%',#{orderNo},'%')
+            </if>
+            <if test="productName !=null and productName != ''">
+                and product_name like  concat('%',#{productName},'%')
+            </if>
+            <if test="Name !=null and Name != ''">
+                and name like  concat('%',#{Name},'%')
+            </if>
+            <if test="addressInfo != null and addressInfo !=''">
+                and  province_name like concat('%',#{addressInfo},'%')
+                or  city_name like concat('%',#{addressInfo},'%')
+                or  area_name like concat('%',#{addressInfo},'%')
+            </if>
+            <if test="startTime != null and startTime !='' and endTime!= null and endTime!=''">
+                and DATE(order_pay_time) &gt;= DATE(#{startTime}) AND DATE(order_pay_time) &lt;= DATE(#{endTime})
+            </if>
+            <if test="orderState != null">
+                and order_state = #{orderState}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStateSuccess" resultType="java.lang.Integer">
+        select order_id from `order` where order_state = 3
+    </select>
+
+    <select id="selectWaitPay" resultType="java.lang.Integer">
+        select order_id from `order` where order_state = 0
+    </select>
+</mapper>

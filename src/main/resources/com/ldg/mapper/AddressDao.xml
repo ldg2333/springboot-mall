@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.AddressDao"> <!--扫描到的包路径-->
+    <!--通过ID查询所有-->
+    <select id="selectAllByUserId" resultType="com.ldg.entity.Address" parameterType="Integer">
+        select address_id,user_id,name,province_name,city_name,area_name,address_detail,zip_code,phone,is_default  from address where user_id=#{userId} ORDER BY is_default desc;
+    </select>
+
+    <!--通过ID查询-->
+    <select id="selectById" resultType="com.ldg.entity.Address" parameterType="Integer">
+        select address_id,user_id,name,province_name,city_name,area_name,address_detail,zip_code,phone,is_default  from address where address_id=#{addressId};
+    </select>
+
+    <!--查询所有-->
+    <select id="selectAll" resultType="com.ldg.entity.Address">
+        select address_id,user_id,name,province_name,city_name,area_name,address_detail,zip_code,phone,is_default
+        from address;
+    </select>
+
+    <!-- 判断当前是否存在默认地址 -->
+    <select id="existsDefaultAddress" parameterType="com.ldg.entity.Address" resultType="com.ldg.entity.Address">
+        select address_id,user_id,name,province_name,city_name,area_name,address_detail,zip_code,phone,is_default  from address where user_id=#{userId} and is_default=#{isDefault}
+    </select>
+
+    <!--插入一条数据-->
+    <insert id="insertData" parameterType="com.ldg.entity.Address">
+        insert into address (user_id, name, province_name, city_name,  area_name,  address_detail, zip_code, phone,is_default)
+        values (#{userId}, #{name}, #{provinceName},  #{cityName},  #{areaName}, #{addressDetail}, #{zipCode}, #{phone},#{isDefault});
+    </insert>
+
+    <!--通过ID更新-->
+    <update id="updateById" parameterType="com.ldg.entity.Address">
+        update address
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="provinceName != null">
+                province_name = #{provinceName},
+            </if>
+            <if test="cityName != null">
+                city_name = #{cityName},
+            </if>
+            <if test="areaName != null">
+                area_name = #{areaName},
+            </if>
+            <if test="addressDetail != null">
+                address_detail = #{addressDetail},
+            </if>
+            <if test="zipCode != null">
+                zip_code = #{zipCode},
+            </if>
+            <if test="phone != null">
+                phone = #{phone},
+            </if>
+            <if test="isDefault != null">
+                is_default = #{isDefault},
+            </if>
+        </set>
+        where address_id = #{addressId};
+    </update>
+
+    <!--通过ID删除-->
+    <delete id="deleteById" parameterType="Integer">
+        delete from address where address_id = #{addressId};
+    </delete>
+</mapper>

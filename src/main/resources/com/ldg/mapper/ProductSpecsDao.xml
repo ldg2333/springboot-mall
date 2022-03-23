@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ldg.dao.ProductSpecsDao"> <!--扫描到的包路径-->
+    <!--通过类型查询所有规格名称-->
+    <select id="selectAllByProId" resultType="String" parameterType="Integer">
+        select specs_name from specs where specs_id in(
+        select specs_id from product_specs where product_id=#{productId}) order by(case when specs_name='XXXS' then '0'
+	  when specs_name ='XXS' then '1'
+      when specs_name ='XS' then '2'
+      when specs_name='S' then '3'
+      when specs_name='M' then '4'
+	  when specs_name='L' then '5'
+	  when specs_name='XL' then '6'
+	  when specs_name='XXL' then '7'
+	  when specs_name='XXXL' then '8'
+ end) ASC
+
+    </select>
+    <!--查询所有-->
+    <select id="selectAll" resultType="com.ldg.entity.ProductSpecs">
+        select product_id, specs_id from product_specs;
+    </select>
+    <!--插入一条数据-->
+    <insert id="insertData" parameterType="com.ldg.entity.ProductSpecs">
+        insert into product_specs (product_id, specs_id)values (#{productId},#{specsId});
+    </insert>
+    <!--通过ID更新-->
+    <update id="updateById" parameterType="com.ldg.entity.ProductSpecs">
+        update product_specs
+        <set>
+            <if test="productId != null">
+                product_id = #{productId},
+            </if>
+            <if test="specsId != null">
+                specs_id = #{specsId},
+            </if>
+        </set>
+        where product_id = #{productId} and specs_id = #{specsId};
+    </update>
+    <!--通过ID删除-->
+    <delete id="deleteBatch" parameterType="java.util.List">
+
+        <foreach collection="list" item="item" index="index" open="" separator=";" close="">
+            delete from product_specs where product_id = #{item.productId} and specs_id = #{item.specsId}
+        </foreach>
+    </delete>
+
+    <!--批量添加-->
+    <insert id="insertBatch" parameterType="java.util.List" >
+        insert into product_specs (product_id, specs_id)values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.productId},#{item.specsId})
+        </foreach>
+    </insert>
+    
+    <select id="selectTAndSByPId" resultType="com.ldg.entity.Specs">
+        select specs_id as specsId,specs_name as specsName,product_type as productType from specs s where  specs_id in(select specs_id from product_specs where product_id=#{productId});
+    </select>
+
+    <select id="selectTypeName" resultType="java.lang.String">
+        select type_name from product_type
+    </select>
+</mapper>
